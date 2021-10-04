@@ -1,4 +1,4 @@
-# randoli Project
+# Camel Project
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
