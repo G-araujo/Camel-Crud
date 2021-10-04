@@ -1,0 +1,44 @@
+version: '3.8'
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: quarkus
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d/
+    ports:
+      - "5432:5432"
+  web:
+    image: camel-router.jvm
+    environment:
+      - DB_SERVER=db
+      - POSTGRES_DB=eventdto
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=quarkus
+      - EVENT_DB_HOST=db
+    ports:
+      - "8180:8080"
+    depends_on:
+      - db
+  prometheus:
+    image: quay.io/prometheus/prometheus:v2.0.0
+    environment:
+      - URL=web
+    container_name: prometheus
+    volumes:
+      - ./prometheus/:/etc/prometheus/
+    command: "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - 9090:9090
+  grafana:
+      image: grafana/grafana
+      container_name: grafana
+      ports:
+        - 80:3000
+      volumes:
+        - ./data/grafana/:/var/lib/grafana
+        - ./etc/grafana/:/etc/grafana/provisioning/
+      depends_on:
+        - prometheus
